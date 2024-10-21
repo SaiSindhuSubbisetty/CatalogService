@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.catalogservice.dto.Address;
+
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -20,4 +23,7 @@ public class Restaurant {
     private String name;
     @Column(nullable = false)
     private Address address;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
+    private List<Item> items;
 }
