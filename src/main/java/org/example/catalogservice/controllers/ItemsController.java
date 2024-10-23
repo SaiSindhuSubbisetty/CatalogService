@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.example.catalogservice.dto.ApiResponse;
 import org.example.catalogservice.dto.ItemRequest;
+import org.example.catalogservice.dto.ItemResponse;
 import org.example.catalogservice.services.ItemsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,4 +37,10 @@ public class ItemsController {
     public ResponseEntity<ApiResponse> fetchByItemName(@PathVariable(name = "restaurantId") String restaurantId, @PathVariable(name = "itemName") String itemName) {
         return this.itemsService.fetchByName(restaurantId, itemName);
     }
+
+    @GetMapping("/{itemId}")
+    public ResponseEntity<ApiResponse> fetchById(@PathVariable(name = "itemId") String itemId) {
+        return this.itemsService.fetchById(itemId);
+    }
+
 }

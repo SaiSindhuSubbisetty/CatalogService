@@ -90,4 +90,18 @@ public class ItemsService {
 
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    public ResponseEntity<ApiResponse> fetchById(String itemId) {
+        Item item = itemsRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Item not found"));
+
+        ApiResponse response = ApiResponse.builder()
+                .message(FETCHED)
+                .status(HttpStatus.OK)
+                .data(Map.of("item", new ItemResponse(item)))
+                .build();
+
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 }
