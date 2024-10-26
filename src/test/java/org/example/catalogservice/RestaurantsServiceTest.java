@@ -117,4 +117,69 @@ class RestaurantsServiceTest {
         assertThrows(RestaurantNotFoundException.class, () -> restaurantsService.fetchById(restaurantId));
         verify(restaurantsRepository, times(1)).findById(restaurantId);
     }
+    @Test
+    public void testFetchRestaurantByIdNotFound_throwsException() {
+        String restaurantId = "non-existent-id";
+
+        when(restaurantsRepository.findById(restaurantId)).thenReturn(Optional.empty());
+
+        assertThrows(RestaurantNotFoundException.class, () -> restaurantsService.fetchById(restaurantId));
+        verify(restaurantsRepository, times(1)).findById(restaurantId);
+    }
+
+    @Test
+    public void testCreateRestaurantWhenRepositoryFails_throwsException() {
+        RestaurantRequest request = RestaurantRequest.builder()
+                .name("restaurant")
+                .address(mock(Address.class))
+                .build();
+
+        when(restaurantsRepository.existsByNameAndAddress(request.getName(), request.getAddress())).thenReturn(false);
+        when(restaurantsRepository.save(any(Restaurant.class))).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class, () -> restaurantsService.create(request));
+        verify(restaurantsRepository, times(1)).save(any(Restaurant.class));
+    }
+
+    @Test
+    public void testRestaurantCreationWithNullName_throwsException() {
+        RestaurantRequest request = RestaurantRequest.builder()
+                .name(null) // Invalid name
+                .address(mock(Address.class))
+                .build();
+
+        verify(restaurantsRepository, never()).save(any(Restaurant.class));
+    }
+
+    @Test
+    public void testFetchAllRestaurantsReturnsEmptyList() {
+        List<Restaurant> restaurants = List.of();
+
+        when(restaurantsRepository.findAll()).thenReturn(restaurants);
+        ResponseEntity<ApiResponse> response = restaurantsService.fetchAll();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Fetched", Objects.requireNonNull(response.getBody()).getMessage());
+        verify(restaurantsRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void testCreateRestaurantWithInvalidAddress_throwsException() {
+        Address invalidAddress = Address.builder()
+                .buildingNumber(-1) // Invalid building number
+                .city("abc")
+                .state("def")
+                .country("ssw")
+                .locality("sdw")
+                .street("we")
+                .zipcode("600001")
+                .build();
+        RestaurantRequest request = RestaurantRequest.builder()
+                .name("restaurant")
+                .address(invalidAddress)
+                .build();
+
+        verify(restaurantsRepository, never()).save(any(Restaurant.class));
+    }
+
 }

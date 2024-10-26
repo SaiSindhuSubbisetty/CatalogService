@@ -1,6 +1,7 @@
 package org.example.catalogservice.exceptions;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -49,5 +50,10 @@ public class GlobalExceptionHandler {
         Map<String, List<String>> errorResponse = new HashMap<>();
         errorResponse.put("errors", errors);
         return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
     }
 }

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -135,49 +136,37 @@ class ItemsServiceTest {
     }
 
     @Test
-    public void testFetchItemByNameFromARestaurantSuccessfully() {
-        String restaurantId = "abc";
-        String itemName = "def";
-        Restaurant restaurant = mock(Restaurant.class);
-        Item item = mock(Item.class);
+    public void test_cannotFindRestaurantWhileFetchingItem_badRequest() {
+        String itemId = "item123";
 
-        when(restaurantsRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(itemsRepository.findByNameAndRestaurant(itemName, restaurant)).thenReturn(Optional.of(item));
-        when(item.getRestaurant()).thenReturn(restaurant);
-        ResponseEntity<ApiResponse> response = itemsService.fetchByName(restaurantId, itemName);
+        when(itemsRepository.findById(itemId)).thenThrow(new RestaurantNotFoundException("Restaurant not found"));
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(FETCHED, Objects.requireNonNull(response.getBody()).getMessage());
+        assertThrows(RestaurantNotFoundException.class, () -> itemsService.fetchById(itemId));
 
-        verify(restaurantsRepository, times(1)).findById(restaurantId);
-        verify(itemsRepository, times(1)).findByNameAndRestaurant(itemName, restaurant);
+        verify(itemsRepository, times(1)).findById(itemId);
     }
 
     @Test
-    public void testCannotFindRestaurantWhileFetchingItem_throwsError() {
+    public void testCannotFindItemInRestaurant_badRequest() {
+        String itemId = "item123";
+
+        when(itemsRepository.findById(itemId)).thenThrow(new ItemNotFoundException("Item not found"));
+
+        assertThrows(ItemNotFoundException.class, () -> itemsService.fetchById(itemId));
+
+        verify(itemsRepository, times(1)).findById(itemId);
+    }
+
+    @Test
+    public void test_restaurantNotFoundWhileFetchingAllItems_badRequest() {
         String restaurantId = "abc";
-        String itemName = "def";
-        Restaurant restaurant = mock(Restaurant.class);
 
         when(restaurantsRepository.findById(restaurantId)).thenThrow(new RestaurantNotFoundException("Restaurant not found"));
 
-        assertThrows(RestaurantNotFoundException.class, () -> itemsService.fetchByName(restaurantId, itemName));
+        assertThrows(RestaurantNotFoundException.class, () -> itemsService.fetchAll(restaurantId));
 
         verify(restaurantsRepository, times(1)).findById(restaurantId);
-        verify(itemsRepository, never()).findByNameAndRestaurant(itemName, restaurant);
+        verify(itemsRepository, never()).findAllByRestaurant(any(Restaurant.class));
     }
 
-    @Test
-    void testCannotFindItemInRestaurant_throwsError() {
-        String restaurantId = "abc";
-        String itemName = "def";
-        Restaurant restaurant = mock(Restaurant.class);
-
-        when(restaurantsRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(itemsRepository.findByNameAndRestaurant(itemName, restaurant)).thenThrow(new ItemNotFoundException("Item not found"));
-
-        assertThrows(ItemNotFoundException.class, () -> itemsService.fetchByName(restaurantId, itemName));
-        verify(restaurantsRepository, times(1)).findById(restaurantId);
-        verify(itemsRepository, times(1)).findByNameAndRestaurant(itemName, restaurant);
-    }
 }

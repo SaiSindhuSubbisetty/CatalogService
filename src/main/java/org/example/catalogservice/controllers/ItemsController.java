@@ -33,11 +33,6 @@ public class ItemsController {
         return this.itemsService.fetchAll(restaurantId);
     }
 
-    @GetMapping("/{itemName}")
-    public ResponseEntity<ApiResponse> fetchByItemName(@PathVariable(name = "restaurantId") String restaurantId, @PathVariable(name = "itemName") String itemName) {
-        return this.itemsService.fetchByName(restaurantId, itemName);
-    }
-
     @GetMapping("/{itemId}")
     public ResponseEntity<ApiResponse> fetchById(@PathVariable(name = "itemId") String itemId) {
         return this.itemsService.fetchById(itemId);

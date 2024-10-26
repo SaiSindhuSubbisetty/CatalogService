@@ -75,22 +75,6 @@ public class ItemsService {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    public ResponseEntity<ApiResponse> fetchByName(String restaurantId, String itemName) {
-        Restaurant restaurant = restaurantsRepository.findById(restaurantId)
-                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant not found"));
-
-        Item item = itemsRepository.findByNameAndRestaurant(itemName, restaurant)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found"));
-
-        ApiResponse response = ApiResponse.builder()
-                .message(FETCHED)
-                .status(HttpStatus.OK)
-                .data(Map.of("items", new ItemResponse(item)))
-                .build();
-
-        return ResponseEntity.status(response.getStatus()).body(response);
-    }
-
     public ResponseEntity<ApiResponse> fetchById(String itemId) {
         Item item = itemsRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found"));

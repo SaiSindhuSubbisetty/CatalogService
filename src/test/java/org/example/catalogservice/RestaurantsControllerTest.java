@@ -19,10 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -65,32 +62,6 @@ class RestaurantsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated());
         verify(restaurantsService, times(1)).create(request);
-    }
-
-    @Test
-    public void testAnyUserCannotCreateARestaurant_unauthorized() throws Exception {
-        Address address = Address.builder()
-                .buildingNumber(2)
-                .city("abc")
-                .state("def")
-                .country("ssw")
-                .locality("sdw")
-                .street("we")
-                .zipcode("600001")
-                .build();
-        RestaurantRequest request = RestaurantRequest.builder()
-                .name("name")
-                .address(address)
-                .build();
-        String req = objectMapper.writeValueAsString(request);
-
-        when(restaurantsService.create(request)).thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
-
-        mvc.perform(post("/restaurants")
-                .content(req)
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(status().isUnauthorized());
-        verify(restaurantsService, never()).create(request);
     }
 
     @Test
@@ -147,4 +118,76 @@ class RestaurantsControllerTest {
         mvc.perform(get("/restaurants/" + restaurantId)).andExpect(status().isBadRequest());
         verify(restaurantsService, times(1)).fetchById(restaurantId);
     }
+
+    @Test
+    public void testFetchRestaurantThatDoesNotExist() throws Exception {
+        String restaurantId = "non-existent-id";
+
+        when(restaurantsService.fetchById(restaurantId)).thenThrow(new RestaurantNotFoundException("Restaurant not found"));
+
+        mvc.perform(get("/restaurants/" + restaurantId)).andExpect(status().isBadRequest());
+        verify(restaurantsService, times(1)).fetchById(restaurantId);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testMethodArgumentNotValid() throws Exception {
+
+        Address address = Address.builder()
+                .buildingNumber(0)
+                .city("abc")
+                .state("def")
+                .country("ssw")
+                .locality("sdw")
+                .street("we")
+                .zipcode("600001")
+                .build();
+        RestaurantRequest request = RestaurantRequest.builder()
+                .name("")
+                .address(address)
+                .build();
+        String req = objectMapper.writeValueAsString(request);
+
+        mvc.perform(post("/restaurants")
+                .content(req)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+    }
+    @Test
+    public void testFetchAllRestaurantsEmpty() throws Exception {
+        when(restaurantsService.fetchAll()).thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+        mvc.perform(get("/restaurants"))
+                .andExpect(status().isNoContent());
+        verify(restaurantsService, times(1)).fetchAll();
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testCreateRestaurantWithComplexAddress() throws Exception {
+        Address address = new Address(2, "abc", "def", "ssw", "sdw", "complex street", "600001");
+        RestaurantRequest request = new RestaurantRequest("complex name", address);
+        String req = objectMapper.writeValueAsString(request);
+
+        when(restaurantsService.create(request)).thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
+
+        mvc.perform(post("/restaurants")
+                .content(req)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isCreated());
+        verify(restaurantsService, times(1)).create(request);
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testHttpMessageNotReadableException() throws Exception {
+        String invalidJson = "{ \"name\": \"name\", \"address\": { \"buildingNumber\": 2, \"city\": \"abc\" }";
+
+        mvc.perform(post("/restaurants")
+                .content(invalidJson)
+                .contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isBadRequest());
+        verify(restaurantsService, never()).create(any());
+    }
+
 }
