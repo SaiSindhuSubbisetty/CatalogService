@@ -23,6 +23,10 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    public static final String[] PUBLIC_URLS = {
+            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
+    };
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -44,6 +48,7 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers(h2ConsoleMatcher).permitAll()
                         .requestMatchers(apiMatcher).authenticated()
                 )
