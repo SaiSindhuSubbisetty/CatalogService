@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: sindhu
+      changes:
+        - createTable:
+            tableName: restaurants
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: address
+                  type: jsonb
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2
+      author: sindhu
+      changes:
+        - createTable:
+            tableName: food_items
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: price
+                  type: decimal
+                  constraints:
+                    nullable: false
+              - column:
+                  name: restaurant_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - foreignKey:
+                  foreignKeyName: fk_restaurant
+                  referencedTableName: restaurants
+                  referencedColumnNames: id
+                  columnNames: restaurant_id
