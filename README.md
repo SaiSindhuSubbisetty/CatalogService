@@ -1,100 +1,102 @@
 # Catalog Service
 
-The **Catalog Service** is part of a food ordering system. It manages the information about restaurants and their food items. The service allows for the creation, updating, and retrieval of restaurants and food items, and integrates with other services like the **Order Service** for a seamless experience. 
+The **Catalog Service** is part of a Smart Order Management System for cloud kitchens. It manages the information about restaurants and their food items. The service allows for the creation and retrieval of restaurants and menu items. It integrates with other microservices like the **Order Service**, **Payment Service**, and **Inventory Service**.
 
-## Features
-- **Restaurant Management**: Create, update, and manage restaurant details.
-- **Food Item Management**: Manage food items associated with restaurants, including their name, description, and price.
-- **Database**: Uses **PostgreSQL** for persistent storage of restaurant and food item data.
-- **API Documentation**: Automatically generates API documentation using **Swagger** for easy testing and usage.
-- **Database Migrations**: Uses **Liquibase** for version-controlled database schema updates.
+---
 
-## Models
+## ✨ Features
 
-### Item
-- Represents a food item in the catalog.
-- Fields:
-  - `id` (UUID): Unique identifier for the item.
-  - `name`: Name of the food item.
-  - `description`: Description of the food item.
-  - `price`: Price of the food item.
-  - `restaurant`: The restaurant to which the item belongs.
+- 🏪 **Restaurant Management**: Create and retrieve restaurant details.
+- 🍽️ **Menu Item Management**: Add and retrieve food items under specific restaurants.
+- 📓 **Database**: PostgreSQL for persistent storage.
+- ⚙️ **Service Discovery**: Registers with Eureka Server.
+- 🔄 **Database Migrations**: Managed with Liquibase.
+- 📆 **API Layer**: Built using Spring Boot REST controllers.
 
-### Restaurant
-- Represents a restaurant in the catalog.
-- Fields:
-  - `id` (UUID): Unique identifier for the restaurant.
-  - `name`: Name of the restaurant.
-  - `address`: Address of the restaurant.
-  - `items`: List of food items associated with the restaurant.
+---
 
-## Setup
+## 📁 Models
 
-### Prerequisites
-- Java 17 or later
-- Spring Boot 2.x
-- PostgreSQL database
-- Maven or Gradle
+### 🏪 Restaurant
+- `id` (UUID): Unique identifier
+- `name`: Restaurant name
+- `address`: Restaurant address
+- `items`: List of associated food items
 
-### Steps to Run
+### 🍽️ Item
+- `id` (UUID): Unique identifier
+- `name`: Item name
+- `description`: Item description
+- `price`: Item price
+- `restaurant`: Associated restaurant
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/SaiSindhuSubbisetty/catalog-service.git
-   cd catalog-service
-   ```
+---
 
-2. **Configure Database**:
-   - Create a PostgreSQL database (e.g., `catalog_db`).
-   - Update the `application.properties` or `application.yml` with your database credentials:
-   ```properties
-   spring.datasource.url=jdbc:postgresql://localhost:5432/catalog_db
-   spring.datasource.username=your_db_username
-   spring.datasource.password=your_db_password
-   spring.jpa.hibernate.ddl-auto=update
-   ```
+## ⚙️ Configuration
 
-3. **Run Liquibase**:
-   Liquibase will automatically apply database migrations on startup to ensure the database schema is up to date.
+### application.properties
+```properties
+# Service & Eureka
+spring.application.name=catalog-service
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+server.port=8081
 
-4. **Build the Application**:
-   ```bash
-   mvn clean install
-   ```
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5432/catalogdb
+spring.datasource.driverClassName=org.postgresql.Driver
+spring.datasource.username=postgres
+spring.datasource.password=1234
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 
-5. **Run the Application**:
-   ```bash
-   mvn spring-boot:run
-   ```
+# Liquibase
+spring.liquibase.change-log=classpath:db/changelog/db.changelog-master.yaml
+```
 
-6. **Access the Swagger UI**:
-   After the application is running, access the API documentation at:
-   ```bash
-   http://localhost:8080/swagger-ui.html
-   ```
+---
 
-## API Endpoints
+## 🌐 API Endpoints
 
-### Restaurant API
-- **GET** `/restaurants`: Get a list of all restaurants.
-- **POST** `/restaurants`: Create a new restaurant.
-- **GET** `/restaurants/{id}`: Get details of a specific restaurant by ID.
-- **PUT** `/restaurants/{id}`: Update a restaurant.
-- **DELETE** `/restaurants/{id}`: Delete a restaurant.
+### 🔹 Restaurant API
+| Method | Endpoint             | Description                |
+|--------|----------------------|----------------------------|
+| POST   | `/restaurants`       | Create a new restaurant    |
+| GET    | `/restaurants`       | Get all restaurants        |
+| GET    | `/restaurants/{id}`  | Get restaurant by ID       |
 
-### Item API
-- **GET** `/items`: Get a list of all food items.
-- **POST** `/items`: Create a new food item.
-- **GET** `/items/{id}`: Get details of a specific food item by ID.
-- **PUT** `/items/{id}`: Update a food item.
-- **DELETE** `/items/{id}`: Delete a food item.
+### 🔺 Item API
+| Method | Endpoint                                             | Description                        |
+|--------|------------------------------------------------------|------------------------------------|
+| POST   | `/restaurants/{restaurantId}/items`                 | Add new item to a restaurant       |
+| GET    | `/restaurants/{restaurantId}/items`                 | Get all items for a restaurant     |
+| GET    | `/restaurants/{restaurantId}/items/{itemId}`        | Get item by ID                     |
 
-## Tech Stack
-- **Java 17**: Programming language.
-- **Spring Boot**: Framework for building the service.
-- **PostgreSQL**: Database for storing restaurant and food item data.
-- **Liquibase**: Database version control for schema management.
-- **Swagger**: For API documentation and testing.
+---
 
-## License
+## 🧰 Tech Stack
+- Java 17
+- Spring Boot
+- Spring Data JPA
+- Jakarta Validation
+- PostgreSQL
+- Liquibase
+- Eureka Discovery Client
+
+---
+
+## 🛠️ Running Locally
+
+1. **Start Eureka Server** on `localhost:8761`
+2. **Ensure PostgreSQL is running** and accessible
+3. **Run the service**:
+```bash
+./mvnw spring-boot:run
+```
+4. Service will be available at: `http://localhost:8081`
+
+---
+
+## 📄 License
 This project is licensed under the MIT License.
+
